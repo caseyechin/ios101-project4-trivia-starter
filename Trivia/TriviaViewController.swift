@@ -27,29 +27,37 @@ class TriviaViewController: UIViewController {
     addGradient()
     questionContainerView.layer.cornerRadius = 8.0
     // TODO: FETCH TRIVIA QUESTIONS HERE
+      updateQuestion(withQuestionIndex: currQuestionIndex)
+      
   }
   
   private func updateQuestion(withQuestionIndex questionIndex: Int) {
     currentQuestionNumberLabel.text = "Question: \(questionIndex + 1)/\(questions.count)"
     let question = questions[questionIndex]
-    questionLabel.text = question.question
-    categoryLabel.text = question.category
-    let answers = ([question.correctAnswer] + question.incorrectAnswers).shuffled()
-    if answers.count > 0 {
-      answerButton0.setTitle(answers[0], for: .normal)
-    }
-    if answers.count > 1 {
-      answerButton1.setTitle(answers[1], for: .normal)
-      answerButton1.isHidden = false
-    }
-    if answers.count > 2 {
-      answerButton2.setTitle(answers[2], for: .normal)
-      answerButton2.isHidden = false
-    }
-    if answers.count > 3 {
-      answerButton3.setTitle(answers[3], for: .normal)
-      answerButton3.isHidden = false
-    }
+      
+      TriviaQuestionService.fetchQuestions() { question in
+          
+          self.questionLabel.text = question.question
+          self.categoryLabel.text = question.category
+          
+          let answers = ([question.correctAnswer] + question.incorrectAnswers).shuffled()
+          
+          if answers.count > 0 {
+              self.answerButton0.setTitle(answers[0], for: .normal)
+          }
+          if answers.count > 1 {
+              self.answerButton1.setTitle(answers[1], for: .normal)
+              self.answerButton1.isHidden = false
+          }
+          if answers.count > 2 {
+              self.answerButton2.setTitle(answers[2], for: .normal)
+              self.answerButton2.isHidden = false
+          }
+          if answers.count > 3 {
+              self.answerButton3.setTitle(answers[3], for: .normal)
+              self.answerButton3.isHidden = false
+          }
+      }
   }
   
   private func updateToNextQuestion(answer: String) {
