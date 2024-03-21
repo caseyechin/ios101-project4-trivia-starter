@@ -31,14 +31,13 @@ class TriviaViewController: UIViewController {
       
       TriviaQuestionService.fetchQuestions(amount: 10) { question in
           
-          self.config(with: question[self.currQuestionIndex])
+          self.config(with: question[0])
           self.questions = question
           
       }
       updateQuestion(withQuestionIndex: 0)
       
   }
-  
     
     private func config(with question: TriviaQuestion) {
         
