@@ -18,7 +18,8 @@ class TriviaViewController: UIViewController {
   @IBOutlet weak var answerButton2: UIButton!
   @IBOutlet weak var answerButton3: UIButton!
   
-  private var questions = [TriviaQuestion]()
+
+    private var questions = [TriviaQuestion]()
   private var currQuestionIndex = 0
   private var numCorrectQuestions = 0
   
@@ -27,37 +28,73 @@ class TriviaViewController: UIViewController {
     addGradient()
     questionContainerView.layer.cornerRadius = 8.0
     // TODO: FETCH TRIVIA QUESTIONS HERE
-      updateQuestion(withQuestionIndex: currQuestionIndex)
+      
+      TriviaQuestionService.fetchQuestions(amount: 10) { question in
+          
+          self.config(with: question[self.currQuestionIndex])
+          self.questions = question
+          
+      }
+      updateQuestion(withQuestionIndex: 0)
       
   }
   
+    
+    private func config(with question: TriviaQuestion) {
+        
+        var qs = question.incorrectAnswers
+        qs.append(question.correctAnswer)
+        
+        if qs.contains("True") || qs.contains("False") {
+            
+            
+            self.answerButton0.titleLabel?.text = "True"
+            self.answerButton1.titleLabel?.text = "False"
+            self.answerButton2.titleLabel?.text = ""
+            self.answerButton3.titleLabel?.text = ""
+            
+            
+        } else {
+                        
+            qs.shuffle()
+            self.answerButton0.titleLabel?.text = String(qs[0])
+            self.answerButton1.titleLabel?.text = String(qs[1])
+            self.answerButton2.titleLabel?.text = String(qs[2])
+            self.answerButton3.titleLabel?.text = String(qs[3])
+        }
+        
+        self.categoryLabel.text = String(question.category)
+        self.questionLabel.text = String(question.question)
+        
+    }
+    
   private func updateQuestion(withQuestionIndex questionIndex: Int) {
-    currentQuestionNumberLabel.text = "Question: \(questionIndex + 1)/\(questions.count)"
-    let question = questions[questionIndex]
+      guard questionIndex < questions.count else { return }
       
-      TriviaQuestionService.fetchQuestions() { question in
+    currentQuestionNumberLabel.text = "Question: \(questionIndex + 1)/\(questions.count)"
+      
+      let question = questions[questionIndex]
           
-          self.questionLabel.text = question.question
-          self.categoryLabel.text = question.category
+      config(with:question)
           
           let answers = ([question.correctAnswer] + question.incorrectAnswers).shuffled()
           
           if answers.count > 0 {
-              self.answerButton0.setTitle(answers[0], for: .normal)
+              answerButton0.setTitle(answers[0], for: .normal)
           }
           if answers.count > 1 {
-              self.answerButton1.setTitle(answers[1], for: .normal)
-              self.answerButton1.isHidden = false
+              answerButton1.setTitle(answers[1], for: .normal)
+              answerButton1.isHidden = false
           }
           if answers.count > 2 {
-              self.answerButton2.setTitle(answers[2], for: .normal)
-              self.answerButton2.isHidden = false
+              answerButton2.setTitle(answers[2], for: .normal)
+              answerButton2.isHidden = false
           }
           if answers.count > 3 {
-              self.answerButton3.setTitle(answers[3], for: .normal)
-              self.answerButton3.isHidden = false
+              answerButton3.setTitle(answers[3], for: .normal)
+              answerButton3.isHidden = false
           }
-      }
+      
   }
   
   private func updateToNextQuestion(answer: String) {
@@ -83,7 +120,14 @@ class TriviaViewController: UIViewController {
     let resetAction = UIAlertAction(title: "Restart", style: .default) { [unowned self] _ in
       currQuestionIndex = 0
       numCorrectQuestions = 0
-      updateQuestion(withQuestionIndex: currQuestionIndex)
+        
+        TriviaQuestionService.fetchQuestions(amount: 10) { question in
+            
+            self.config(with: question[self.currQuestionIndex])
+            self.questions = question
+            
+        }
+        updateQuestion(withQuestionIndex: 0)
     }
     alertController.addAction(resetAction)
     present(alertController, animated: true, completion: nil)
@@ -114,5 +158,6 @@ class TriviaViewController: UIViewController {
   @IBAction func didTapAnswerButton3(_ sender: UIButton) {
     updateToNextQuestion(answer: sender.titleLabel?.text ?? "")
   }
+    
 }
 

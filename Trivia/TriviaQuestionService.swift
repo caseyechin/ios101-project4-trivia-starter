@@ -10,26 +10,37 @@ import Foundation
 class TriviaQuestionService {
     
     
-    private static func parse(data: Data) -> TriviaQuestion {
+    private static func parse(data: Data) -> [TriviaQuestion] {
         
         let jsonDictionary = try! JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
         
-        let triv = jsonDictionary["triv"] as! [String: Any]
         
-        let category = triv["category"] as! String
         
-        let question = triv["question"] as! String
+        let results = jsonDictionary["results"] as! [String: Any]
         
-        let correctAnswer = triv["correctAnswer"] as! String
+        let responseCode = results["response_code"] as! Int
+    
+            let category = results["category"] as! String
+                
+            let question = results["question"] as! String
+                
+            let correctAnswer = results["correctAnswer"] as! String
+                
+            let incorrectAnswers = results["incorrectAnswers"] as! [String]
+                
+            let type = results["type"] as! String
+                
+            let difficulty = results["difficulty"] as! String
         
-        let incorrectAnswers = triv["incorrectAnswers"] as! [String]
         
-        return TriviaQuestion(category: category, question: question, correctAnswer: correctAnswer, incorrectAnswers: incorrectAnswers)
+        return [TriviaQuestion(category: category, question: question, correctAnswer: correctAnswer, incorrectAnswers: incorrectAnswers, type: type, difficulty: difficulty)]
     }
     
-    static func fetchQuestions(completion: ((TriviaQuestion) -> Void)? = nil) {
+    static func fetchQuestions(amount: Int, completion: (([TriviaQuestion]) -> Void)? = nil) {
         
-        let url = URL(string: "https://opentdb.com/api.php?amount=10")!
+        let parameters = "amount=\(amount)"
+        
+        let url = URL(string: "https://opentdb.com/api.php?\(parameters)")!
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             
@@ -51,12 +62,11 @@ class TriviaQuestionService {
             
             let response = try! decoder.decode(TriviaAPIResponse.self, from: data)
             DispatchQueue.main.async {
-                completion?(response.triv)
+                completion?(response.results)
             }
             
         }
             task.resume() // resume the task and fire the request
-        
         
         
     }
